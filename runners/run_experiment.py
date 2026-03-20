@@ -14,26 +14,26 @@ from pathlib import Path
 from agents.normalizer import StrandsTraceNormalizer
 from agents.sample_support_agent import create_support_agent
 from evaluators.tool_correctness import ToolCorrectnessEvaluator
-from schemas.case import TestCase
+from schemas.case import EvalCase
 from schemas.results import CaseResult, ExperimentResult, ExperimentSummary
 from schemas.run_record import RunRecord
 
 
-def load_cases(path: Path) -> list[TestCase]:
+def load_cases(path: Path) -> list[EvalCase]:
     cases = []
     with open(path) as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
-            cases.append(TestCase.model_validate(json.loads(line)))
+            cases.append(EvalCase.model_validate(json.loads(line)))
     return cases
 
 
 def run_single_case(
     normalizer: StrandsTraceNormalizer,
     evaluator: ToolCorrectnessEvaluator,
-    case: TestCase,
+    case: EvalCase,
 ) -> CaseResult:
     # Create a fresh agent per case for full isolation
     agent = create_support_agent()

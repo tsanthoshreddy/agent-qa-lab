@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from schemas.case import TestCase
+from schemas.case import EvalCase
 from schemas.results import EvaluationResult
 from schemas.run_record import RunRecord
 
@@ -9,5 +9,5 @@ class BaseEvaluator(ABC):
     name: str
 
     @abstractmethod
-    def evaluate(self, case: TestCase, run_record: RunRecord) -> EvaluationResult:
+    def evaluate(self, case: EvalCase, run_record: RunRecord) -> EvaluationResult:
         ...

@@ -1,5 +1,5 @@
 from evaluators.tool_correctness import ToolCorrectnessEvaluator
-from schemas.case import CaseExpectation, TestCase
+from schemas.case import CaseExpectation, EvalCase
 from schemas.run_record import RunRecord, ToolCall
 
 
@@ -7,8 +7,8 @@ def _make_case(
     case_id: str = "test_001",
     input_text: str = "Check order ORD-1001",
     **expectation_kwargs,
-) -> TestCase:
-    return TestCase(
+) -> EvalCase:
+    return EvalCase(
         case_id=case_id,
         input=input_text,
         category="test",

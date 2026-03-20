@@ -13,7 +13,7 @@ class CaseExpectation(BaseModel):
     answer_must_not_contain: list[str] = []
 
 
-class TestCase(BaseModel):
+class EvalCase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     case_id: str

@@ -1,4 +1,4 @@
-from schemas.case import TestCase
+from schemas.case import EvalCase
 from schemas.results import EvaluationResult
 from schemas.run_record import RunRecord
 
@@ -8,7 +8,7 @@ from evaluators.base import BaseEvaluator
 class ToolCorrectnessEvaluator(BaseEvaluator):
     name = "tool_correctness"
 
-    def evaluate(self, case: TestCase, run_record: RunRecord) -> EvaluationResult:
+    def evaluate(self, case: EvalCase, run_record: RunRecord) -> EvaluationResult:
         dimensions: dict[str, bool] = {}
         notes: list[str] = []
 
@@ -40,7 +40,7 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
 
     @staticmethod
     def _check_correct_tool(
-        case: TestCase, run_record: RunRecord, notes: list[str]
+        case: EvalCase, run_record: RunRecord, notes: list[str]
     ) -> bool:
         exp = case.expectation
         called_tools = {tc.tool_name for tc in run_record.tool_calls}
@@ -64,7 +64,7 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
 
     @staticmethod
     def _check_required_arguments(
-        case: TestCase, run_record: RunRecord, notes: list[str]
+        case: EvalCase, run_record: RunRecord, notes: list[str]
     ) -> bool:
         exp = case.expectation
         if not exp.required_arguments:
@@ -102,7 +102,7 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
 
     @staticmethod
     def _check_forbidden_tools(
-        case: TestCase, run_record: RunRecord, notes: list[str]
+        case: EvalCase, run_record: RunRecord, notes: list[str]
     ) -> bool:
         exp = case.expectation
         if not exp.forbidden_tools:
@@ -118,7 +118,7 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
 
     @staticmethod
     def _check_unnecessary_calls(
-        case: TestCase, run_record: RunRecord, notes: list[str]
+        case: EvalCase, run_record: RunRecord, notes: list[str]
     ) -> bool:
         exp = case.expectation
 
@@ -144,7 +144,7 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
 
     @staticmethod
     def _check_answer_consistency(
-        case: TestCase, run_record: RunRecord, notes: list[str]
+        case: EvalCase, run_record: RunRecord, notes: list[str]
     ) -> bool:
         exp = case.expectation
 
