@@ -1,7 +1,7 @@
 import os
+import sys
 
 from strands import Agent
-from strands.models import OpenAIModel
 
 from domain.support_tools import lookup_customer_info, lookup_order_status, refund_order
 
@@ -18,14 +18,44 @@ Rules:
 
 TOOLS = [lookup_order_status, lookup_customer_info, refund_order]
 
+# Provider -> default model ID
+DEFAULT_MODELS = {
+    "openai": "gpt-4o",
+    "bedrock": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+}
+
+
+def _build_model(provider: str, model_id: str):
+    """Build a Strands model instance for the given provider."""
+    if provider == "openai":
+        from strands.models.openai import OpenAIModel
+
+        client_args = {"api_key": os.environ["OPENAI_API_KEY"]}
+        base_url = os.environ.get("OPENAI_BASE_URL")
+        if base_url:
+            client_args["base_url"] = base_url
+        return OpenAIModel(
+            client_args=client_args,
+            model_id=model_id,
+            params={"temperature": 0},
+        )
+
+    if provider == "bedrock":
+        from strands.models.bedrock import BedrockModel
+
+        return BedrockModel(model_id=model_id, temperature=0)
+
+    print(
+        f"Unknown provider '{provider}'. Supported: openai, bedrock",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
 
 def create_support_agent() -> Agent:
-    model_id = os.environ.get("AQL_MODEL_ID", "gpt-4o")
-    model = OpenAIModel(
-        client_args={"api_key": os.environ["OPENAI_API_KEY"]},
-        model_id=model_id,
-        params={"temperature": 0},
-    )
+    provider = os.environ.get("AQL_PROVIDER", "openai").lower()
+    model_id = os.environ.get("AQL_MODEL_ID", DEFAULT_MODELS.get(provider, "gpt-4o"))
+    model = _build_model(provider, model_id)
     return Agent(
         model=model,
         tools=TOOLS,

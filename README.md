@@ -45,7 +45,7 @@ agent-qa-lab/
 ### Prerequisites
 
 - Python 3.10+
-- An OpenAI API key
+- An API key or credentials for one of the supported providers (see below)
 
 ### Install
 
@@ -53,16 +53,42 @@ agent-qa-lab/
 pip install -e .
 ```
 
+### Supported model providers
+
+| Provider | Set `AQL_PROVIDER` | Default model | Auth |
+|---|---|---|---|
+| **OpenAI** | `openai` (default) | `gpt-4o` | `OPENAI_API_KEY` env var |
+| **Amazon Bedrock** | `bedrock` | `us.anthropic.claude-sonnet-4-20250514-v1:0` | AWS credentials (`aws login` / `AWS_PROFILE`) |
+| **OpenAI-compatible** (Ollama, vLLM, LM Studio, etc.) | `openai` | `gpt-4o` | `OPENAI_API_KEY` + `OPENAI_BASE_URL` env vars |
+
 ### Run
 
+**With OpenAI (default):**
 ```bash
 export OPENAI_API_KEY="your-key-here"
+python -m runners.run_experiment cases/support_cases.jsonl
+```
+
+**With Amazon Bedrock:**
+```bash
+export AQL_PROVIDER="bedrock"
+python -m runners.run_experiment cases/support_cases.jsonl
+```
+
+**With a local model (e.g., Ollama):**
+```bash
+export AQL_PROVIDER="openai"
+export OPENAI_BASE_URL="http://localhost:11434/v1"
+export OPENAI_API_KEY="unused"
+export AQL_MODEL_ID="llama3"
 python -m runners.run_experiment cases/support_cases.jsonl
 ```
 
 Results are written to `outputs/`.
 
 ### Use a different model
+
+Override the default model for any provider:
 
 ```bash
 export AQL_MODEL_ID="gpt-4o-mini"
