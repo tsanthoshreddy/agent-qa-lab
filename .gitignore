@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+outputs/*.json
+
+.env
+.venv/
+venv/
+
+# Planning docs (not part of the codebase)
+agent_qa_lab_*.md
+agent_qa_lab_*.docx
