@@ -17,6 +17,12 @@ dependencies = [
     "pydantic>=2.4.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["schemas", "domain", "agents", "evaluators", "runners"]
 

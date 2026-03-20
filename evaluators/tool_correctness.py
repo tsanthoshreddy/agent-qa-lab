@@ -8,12 +8,6 @@ from evaluators.base import BaseEvaluator
 class ToolCorrectnessEvaluator(BaseEvaluator):
     name = "tool_correctness"
 
-    CRITICAL_DIMENSIONS = {
-        "correct_tool_selected",
-        "required_arguments_present",
-        "final_answer_consistent_with_tool_output",
-    }
-
     def evaluate(self, case: TestCase, run_record: RunRecord) -> EvaluationResult:
         dimensions: dict[str, bool] = {}
         notes: list[str] = []
@@ -34,9 +28,7 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
             self._check_answer_consistency(case, run_record, notes)
         )
 
-        passed = all(
-            dimensions[d] for d in self.CRITICAL_DIMENSIONS if d in dimensions
-        )
+        passed = all(dimensions.values())
 
         return EvaluationResult(
             case_id=case.case_id,
@@ -159,28 +151,53 @@ class ToolCorrectnessEvaluator(BaseEvaluator):
         if "answer_consistent_with_tool_output" not in exp.expected_constraints:
             return True
 
+        answer_lower = run_record.final_output.lower()
+        ok = True
+
+        # Check explicit must-contain values
+        for value in exp.answer_must_contain:
+            if value.lower() not in answer_lower:
+                notes.append(
+                    f"Answer must contain '{value}' but it was not found"
+                )
+                ok = False
+
+        # Check explicit must-not-contain values
+        for value in exp.answer_must_not_contain:
+            if value.lower() in answer_lower:
+                notes.append(
+                    f"Answer must not contain '{value}' but it was found"
+                )
+                ok = False
+
+        # If explicit assertions were defined, use them as the verdict
+        if exp.answer_must_contain or exp.answer_must_not_contain:
+            return ok
+
+        # Fallback: heuristic check against tool output values
         if not run_record.tool_calls:
             notes.append(
                 "Answer consistency check skipped: no tool calls to compare against"
             )
             return True
 
-        # Collect key string values from tool outputs
         check_values: list[str] = []
         for tc in run_record.tool_calls:
             if isinstance(tc.output, dict):
                 for v in tc.output.values():
-                    if v is not None:
-                        check_values.append(str(v))
-            elif isinstance(tc.output, str):
+                    sv = str(v)
+                    # Skip short/generic values to avoid false positives
+                    if v is None or len(sv) < 4:
+                        continue
+                    check_values.append(sv)
+            elif isinstance(tc.output, str) and len(tc.output) >= 4:
                 check_values.append(tc.output)
 
         if not check_values:
             notes.append("Answer consistency check skipped: no usable tool output")
             return True
 
-        answer_lower = run_record.final_output.lower()
-        matched_any = any(str(v).lower() in answer_lower for v in check_values)
+        matched_any = any(v.lower() in answer_lower for v in check_values)
 
         if not matched_any:
             notes.append(

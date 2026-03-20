@@ -9,6 +9,8 @@ class CaseExpectation(BaseModel):
     forbidden_tools: list[str] = []
     required_arguments: dict[str, dict[str, str]] = {}
     expected_constraints: list[str] = []
+    answer_must_contain: list[str] = []
+    answer_must_not_contain: list[str] = []
 
 
 class TestCase(BaseModel):
@@ -17,4 +19,5 @@ class TestCase(BaseModel):
     case_id: str
     input: str
     category: str
+    description: str = ""
     expectation: CaseExpectation

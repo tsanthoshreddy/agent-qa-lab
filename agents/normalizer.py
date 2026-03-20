@@ -15,19 +15,29 @@ class StrandsTraceNormalizer:
         tool_calls: list[ToolCall] = []
         tool_call_index = 0
 
-        # First pass: collect tool results keyed by toolUseId
+        # First pass: collect tool results keyed by toolUseId (from any role)
         tool_results_by_id: dict[str, Any] = {}
         for msg in messages:
-            if msg["role"] == "user":
-                for block in msg.get("content", []):
-                    if isinstance(block, dict) and "toolResult" in block:
-                        tr = block["toolResult"]
-                        tool_results_by_id[tr["toolUseId"]] = tr.get("content")
+            content = msg.get("content", [])
+            if not isinstance(content, list):
+                continue
+            for block in content:
+                if isinstance(block, dict) and "toolResult" in block:
+                    tr = block["toolResult"]
+                    tool_results_by_id[tr["toolUseId"]] = tr.get("content")
 
         # Second pass: build conversation turns and tool calls
         for msg in messages:
             role = msg["role"]
-            for block in msg.get("content", []):
+            content = msg.get("content", [])
+            if not isinstance(content, list):
+                # Handle plain string content
+                if isinstance(content, str) and content:
+                    conversation_turns.append(
+                        ConversationTurn(role=role, content=content)
+                    )
+                continue
+            for block in content:
                 if not isinstance(block, dict):
                     continue
                 if "text" in block:
